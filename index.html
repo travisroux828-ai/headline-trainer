@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Headline Trainer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Stats Bar -->
+  <header id="stats-bar">
+    <div class="stat">
+      <span class="stat-label">Avg Time</span>
+      <span id="stat-avg" class="stat-value">--</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Best</span>
+      <span id="stat-best" class="stat-value">--</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Accuracy</span>
+      <span id="stat-accuracy" class="stat-value">--</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Round</span>
+      <span id="stat-round" class="stat-value">0 / 0</span>
+    </div>
+    <button id="settings-btn" title="Settings">&#9881;</button>
+  </header>
+
+  <!-- Main Arena -->
+  <main id="arena">
+    <div id="headline-display">Press SPACE to start</div>
+    <div id="timer-display">0 ms</div>
+    <input id="ticker-input" type="text" placeholder="TICKER" autocomplete="off" spellcheck="false" disabled>
+    <div id="result-display"></div>
+    <div id="key-hint">
+      <span class="hint-long">Shift + [S D A F G] = Long</span>
+      <span class="hint-sep">|</span>
+      <span class="hint-short">Shift + [J K H L ;] = Short</span>
+      <span class="hint-sep">|</span>
+      <span class="hint-skip">Del = Skip</span>
+    </div>
+  </main>
+
+  <!-- Results History -->
+  <section id="history-section">
+    <table id="history-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Headline</th>
+          <th>Expected</th>
+          <th>Your Ticker</th>
+          <th>Direction</th>
+          <th>Time</th>
+          <th>Result</th>
+        </tr>
+      </thead>
+      <tbody id="history-body"></tbody>
+    </table>
+  </section>
+
+  <!-- Settings Panel -->
+  <div id="settings-overlay" class="hidden"></div>
+  <aside id="settings-panel" class="hidden">
+    <div class="settings-header">
+      <h2>Settings</h2>
+      <button id="settings-close">&times;</button>
+    </div>
+
+    <div class="settings-section">
+      <h3>Key Mappings</h3>
+      <table class="keymap-table">
+        <tr><td class="key-action long">Buy Long</td><td>Shift + S / D / A / F / G</td></tr>
+        <tr><td class="key-action short">Short</td><td>Shift + J / K / H / L / ;</td></tr>
+        <tr><td class="key-action skip">Skip</td><td>Delete</td></tr>
+        <tr><td class="key-action">Start / Next</td><td>Space</td></tr>
+        <tr><td class="key-action">Settings</td><td>Escape</td></tr>
+      </table>
+    </div>
+
+    <div class="settings-section">
+      <h3>Import Custom Headlines</h3>
+      <p class="settings-hint">JSON array: <code>[{"text": "...", "ticker": "AAPL", "direction": "long"}]</code></p>
+      <input type="file" id="file-import" accept=".json">
+      <div id="import-status"></div>
+      <button id="btn-load-default" class="settings-btn">Reset to Default Headlines</button>
+    </div>
+
+    <div class="settings-section">
+      <h3>Session History</h3>
+      <div id="past-sessions"></div>
+      <button id="btn-clear-history" class="settings-btn danger">Clear All History</button>
+    </div>
+  </aside>
+
+  <script src="headlines.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+[
+  {
+    "text": "Company X beats earnings estimates by 20%",
+    "ticker": "CMPX",
+    "direction": "long"
+  },
+  {
+    "text": "Company Y warns of revenue shortfall next quarter",
+    "ticker": "CMPY",
+    "direction": "short"
+  },
+  {
+    "text": "Company Z announces CEO transition",
+    "ticker": "CMPZ"
+  }
+]

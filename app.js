@@ -92,12 +92,42 @@
     return a;
   }
 
+  const ROUNDS_PER_SESSION = 50;
+
   function initSession() {
-    let src = getHeadlines();
-    if (settings.noiseHeadlines && window.NOISE_HEADLINES) {
-      src = src.concat(window.NOISE_HEADLINES);
+    // Build the full pool
+    var pool = window.DEFAULT_HEADLINES.slice();
+    var noise = (settings.noiseHeadlines && window.NOISE_HEADLINES) ? window.NOISE_HEADLINES.slice() : [];
+
+    // Check for custom headlines — they get added with 3x weight
+    var customRaw = localStorage.getItem(LS_CUSTOM);
+    var customHeadlines = [];
+    if (customRaw) {
+      try {
+        var parsed = JSON.parse(customRaw);
+        if (Array.isArray(parsed) && parsed.length > 0) customHeadlines = parsed;
+      } catch (e) { /* ignore */ }
     }
-    state.headlines = shuffleArray(src);
+
+    // Build weighted pool: custom headlines appear 3x
+    var weighted = pool.concat(noise);
+    for (var i = 0; i < 3; i++) {
+      weighted = weighted.concat(customHeadlines);
+    }
+
+    // Shuffle and pick ROUNDS_PER_SESSION unique headlines
+    var shuffled = shuffleArray(weighted);
+    // Deduplicate by headline text (since custom are repeated 3x, they'll appear more often in the pick but we don't want exact dupes in one session)
+    var seen = new Set();
+    var picked = [];
+    for (var j = 0; j < shuffled.length && picked.length < ROUNDS_PER_SESSION; j++) {
+      if (!seen.has(shuffled[j].text)) {
+        seen.add(shuffled[j].text);
+        picked.push(shuffled[j]);
+      }
+    }
+
+    state.headlines = picked;
     state.currentIndex = 0;
     state.session = { results: [], startedAt: Date.now() };
     updateStats();

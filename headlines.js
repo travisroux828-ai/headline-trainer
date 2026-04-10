@@ -63,19 +63,40 @@ window.DEFAULT_HEADLINES = [
 
 // Noise headlines — not actionable, correct response is to skip (Del)
 window.NOISE_HEADLINES = [
+  // Macro / market-wide noise
   { text: "US consumer confidence index comes in at 104.2 for March", ticker: "", noise: true },
   { text: "Fed officials reiterate data-dependent approach to rate decisions", ticker: "", noise: true },
   { text: "Treasury yields hold steady ahead of Friday jobs report", ticker: "", noise: true },
   { text: "Oil prices little changed as traders await OPEC meeting", ticker: "", noise: true },
   { text: "European markets close mixed in quiet trading session", ticker: "", noise: true },
   { text: "China manufacturing PMI ticks up to 50.3 in March", ticker: "", noise: true },
-  { text: "US housing starts rise 1.2% month-over-month in February", ticker: "", noise: true },
   { text: "Dollar index flat as markets digest mixed economic signals", ticker: "", noise: true },
   { text: "Weekly jobless claims come in at 215K matching expectations", ticker: "", noise: true },
   { text: "IMF maintains global growth forecast at 3.1% for 2026", ticker: "", noise: true },
   { text: "Gold prices consolidate near $2,400 amid low volatility", ticker: "", noise: true },
-  { text: "Bitcoin trades sideways around $95K over the weekend", ticker: "", noise: true },
   { text: "Natural gas inventories draw 28 Bcf in line with estimates", ticker: "", noise: true },
   { text: "Senate committee schedules hearing on AI regulation framework", ticker: "", noise: true },
   { text: "US trade deficit widens slightly to $68.9B in January", ticker: "", noise: true },
+
+  // Company-specific noise — mentions a ticker but not actionable
+  { text: "Apple announces new color options for iPhone 16 lineup", ticker: "", noise: true },
+  { text: "Tesla opens two new Supercharger stations in rural Texas", ticker: "", noise: true },
+  { text: "Amazon updates return policy for third-party sellers", ticker: "", noise: true },
+  { text: "Microsoft releases minor patch update for Windows 11", ticker: "", noise: true },
+  { text: "NVIDIA CEO Jensen Huang to speak at tech conference next week", ticker: "", noise: true },
+  { text: "Meta updates community guidelines for Instagram Threads", ticker: "", noise: true },
+  { text: "Alphabet publishes annual diversity and inclusion report", ticker: "", noise: true },
+  { text: "JPMorgan opens new branch location in downtown Nashville", ticker: "", noise: true },
+  { text: "Disney announces new meet-and-greet character at Magic Kingdom", ticker: "", noise: true },
+  { text: "Netflix adds behind-the-scenes content for popular series", ticker: "", noise: true },
+  { text: "Boeing completes routine maintenance inspection on 737 fleet", ticker: "", noise: true },
+  { text: "Walmart expands grocery delivery hours to include early morning", ticker: "", noise: true },
+  { text: "Costco opens new warehouse location in suburban Phoenix", ticker: "", noise: true },
+  { text: "Nike releases limited edition colorway for Air Max line", ticker: "", noise: true },
+  { text: "Starbucks introduces new seasonal drink to spring menu", ticker: "", noise: true },
+  { text: "AMD sponsors esports tournament at DreamHack event", ticker: "", noise: true },
+  { text: "Uber adds new accessibility features to rider app", ticker: "", noise: true },
+  { text: "Pfizer donates $5M to global health initiative in Africa", ticker: "", noise: true },
+  { text: "Goldman Sachs publishes research note on emerging market trends", ticker: "", noise: true },
+  { text: "CrowdStrike CEO to participate in fireside chat at RSA Conference", ticker: "", noise: true },
 ];

@@ -354,7 +354,7 @@
     state.phase = 'idle';
     tickerInput.disabled = true;
     tickerInput.classList.remove('locked');
-    headlineEl.textContent = 'Session stopped. Press SPACE to restart';
+    headlineEl.textContent = 'Session stopped. Press ENTER to restart';
     headlineEl.classList.add('idle');
     timerEl.textContent = '';
     saveSession();
@@ -365,7 +365,7 @@
     state.phase = 'idle';
     stopTimer();
     tickerInput.disabled = true;
-    headlineEl.textContent = 'Session complete! Press SPACE to restart';
+    headlineEl.textContent = 'Session complete! Press ENTER to restart';
     headlineEl.classList.add('idle');
     timerEl.textContent = '';
 
@@ -415,8 +415,8 @@
     // Ignore keys when settings open
     if (!settingsPanel.classList.contains('hidden')) return;
 
-    // Space to start/advance
-    if (e.key === ' ' || e.code === 'Space') {
+    // Enter to start/advance/lock ticker (context-dependent)
+    if (e.key === 'Enter') {
       if (state.phase === 'idle') {
         e.preventDefault();
         initSession();
@@ -428,13 +428,7 @@
         showHeadline();
         return;
       }
-      // In active/locked phase, space goes into input — don't prevent
-      return;
-    }
-
-    // --- ACTIVE phase: typing ticker, press Enter to lock it in ---
-    if (state.phase === 'active') {
-      if (e.key === 'Enter') {
+      if (state.phase === 'active') {
         e.preventDefault();
         // Lock in the ticker, now waiting for direction key
         state.phase = 'locked';
@@ -442,6 +436,11 @@
         tickerInput.classList.add('locked');
         return;
       }
+      return;
+    }
+
+    // --- ACTIVE phase: typing ticker ---
+    if (state.phase === 'active') {
 
       if (e.key === 'Delete') {
         e.preventDefault();

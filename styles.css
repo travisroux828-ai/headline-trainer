@@ -133,6 +133,13 @@ body {
   cursor: not-allowed;
 }
 
+#ticker-input.locked {
+  opacity: 1;
+  border-color: #ff9800;
+  box-shadow: 0 0 12px rgba(255, 152, 0, 0.3);
+  cursor: default;
+}
+
 #result-display {
   font-size: 1.2rem;
   font-weight: 600;
@@ -165,9 +172,11 @@ body {
   color: #555;
 }
 
+.hint-enter { color: #ff9800; }
 .hint-long { color: #4caf50; }
 .hint-short { color: #f44336; }
 .hint-skip { color: #888; }
+.hint-stop { color: #ff5722; }
 .hint-sep { color: #333; }
 
 /* History Table */

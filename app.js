@@ -24,8 +24,8 @@
   const pastSessionsEl = document.getElementById('past-sessions');
 
   // --- Constants ---
-  const LONG_KEYS = new Set(['S', 'D', 'A', 'F', 'G']);
-  const SHORT_KEYS = new Set(['J', 'K', 'H', 'L', ';']);
+  const SHORT_KEYS = new Set(['S', 'D', 'A', 'F', 'G']);
+  const LONG_KEYS = new Set(['J', 'K', 'H', 'L', ';']);
   const RESULT_DISPLAY_MS = 1500;
   const LS_SESSIONS = 'headline-trainer-sessions';
   const LS_CUSTOM = 'headline-trainer-custom-headlines';
@@ -33,7 +33,7 @@
 
   // --- State ---
   const state = {
-    phase: 'idle', // 'idle' | 'active' | 'result'
+    phase: 'idle', // 'idle' | 'active' | 'locked' | 'result'
     headlines: [],
     currentIndex: 0,
     currentHeadline: null,
@@ -84,7 +84,7 @@
   }
 
   function updateTimerDisplay() {
-    if (state.phase !== 'active') return;
+    if (state.phase !== 'active' && state.phase !== 'locked') return;
     const elapsed = performance.now() - state.timerStart;
     timerEl.textContent = Math.floor(elapsed) + ' ms';
     state.timerRAF = requestAnimationFrame(updateTimerDisplay);
@@ -132,6 +132,7 @@
 
     timerEl.textContent = timeMs + ' ms';
     tickerInput.disabled = true;
+    tickerInput.classList.remove('locked');
 
     const tickerCorrect = userTicker === expected.ticker.toUpperCase() ||
       (expected.altTickers && expected.altTickers.map(t => t.toUpperCase()).includes(userTicker));
@@ -273,6 +274,19 @@
     }
   }
 
+  // --- Stop Session (user pressed Escape mid-session) ---
+  function stopSession() {
+    if (state.resultTimeout) clearTimeout(state.resultTimeout);
+    stopTimer();
+    state.phase = 'idle';
+    tickerInput.disabled = true;
+    tickerInput.classList.remove('locked');
+    headlineEl.textContent = 'Session stopped. Press SPACE to restart';
+    headlineEl.classList.add('idle');
+    timerEl.textContent = '';
+    saveSession();
+  }
+
   // --- Session End ---
   function endSession() {
     state.phase = 'idle';
@@ -316,6 +330,11 @@
     // Settings toggle
     if (e.key === 'Escape') {
       e.preventDefault();
+      // If in an active session, stop it
+      if (state.phase === 'active' || state.phase === 'locked' || state.phase === 'result') {
+        stopSession();
+        return;
+      }
       toggleSettings();
       return;
     }
@@ -337,36 +356,56 @@
         showHeadline();
         return;
       }
-      // In active phase, space goes into input — don't prevent
+      // In active/locked phase, space goes into input — don't prevent
       return;
     }
 
-    if (state.phase !== 'active') return;
-
-    // Action keys
-    if (e.shiftKey) {
-      const key = e.key === ';' ? ';' : e.key.toUpperCase();
-      if (LONG_KEYS.has(key)) {
+    // --- ACTIVE phase: typing ticker, press Enter to lock it in ---
+    if (state.phase === 'active') {
+      if (e.key === 'Enter') {
         e.preventDefault();
-        submitRound('long');
+        // Lock in the ticker, now waiting for direction key
+        state.phase = 'locked';
+        tickerInput.disabled = true;
+        tickerInput.classList.add('locked');
         return;
       }
-      if (SHORT_KEYS.has(key) || e.key === ';') {
+
+      if (e.key === 'Delete') {
         e.preventDefault();
-        submitRound('short');
+        submitRound('skip');
         return;
       }
-    }
 
-    if (e.key === 'Delete') {
-      e.preventDefault();
-      submitRound('skip');
+      // All other keys flow into the input
+      if (document.activeElement !== tickerInput) {
+        tickerInput.focus();
+      }
       return;
     }
 
-    // All other keys flow into the input — ensure it's focused
-    if (document.activeElement !== tickerInput) {
-      tickerInput.focus();
+    // --- LOCKED phase: ticker submitted, waiting for direction key ---
+    if (state.phase === 'locked') {
+      if (e.shiftKey) {
+        const key = e.key === ';' ? ';' : e.key.toUpperCase();
+        if (LONG_KEYS.has(key) || e.key === ';') {
+          e.preventDefault();
+          submitRound('long');
+          return;
+        }
+        if (SHORT_KEYS.has(key)) {
+          e.preventDefault();
+          submitRound('short');
+          return;
+        }
+      }
+
+      if (e.key === 'Delete') {
+        e.preventDefault();
+        submitRound('skip');
+        return;
+      }
+      return;
     }
   });
 

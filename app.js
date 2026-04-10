@@ -221,9 +221,7 @@
     updateAllTimeBest(timeMs, result);
 
     state.phase = 'result';
-    state.resultTimeout = setTimeout(() => {
-      showHeadline();
-    }, RESULT_DISPLAY_MS);
+    // Don't auto-advance — wait for Space to trigger next headline
   }
 
   // --- Result Display ---
@@ -351,7 +349,6 @@
 
   // --- Stop Session (user pressed Escape mid-session) ---
   function stopSession() {
-    if (state.resultTimeout) clearTimeout(state.resultTimeout);
     if (state.waitingTimeout) clearTimeout(state.waitingTimeout);
     stopTimer();
     state.phase = 'idle';
@@ -428,7 +425,6 @@
       }
       if (state.phase === 'result') {
         e.preventDefault();
-        clearTimeout(state.resultTimeout);
         showHeadline();
         return;
       }

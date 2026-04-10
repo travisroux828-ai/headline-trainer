@@ -87,6 +87,18 @@
     </div>
 
     <div class="settings-section">
+      <h3>Drill Options</h3>
+      <label class="toggle-row">
+        <input type="checkbox" id="toggle-delay" checked>
+        <span>Random delay between headlines (1-10s)</span>
+      </label>
+      <label class="toggle-row">
+        <input type="checkbox" id="toggle-noise" checked>
+        <span>Include noise headlines (non-actionable)</span>
+      </label>
+    </div>
+
+    <div class="settings-section">
       <h3>Import Custom Headlines</h3>
       <p class="settings-hint">JSON array: <code>[{"text": "...", "ticker": "AAPL", "direction": "long"}]</code></p>
       <input type="file" id="file-import" accept=".json">

@@ -317,6 +317,22 @@ body {
 .key-action.short { color: #f44336; }
 .key-action.skip { color: #888; }
 
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.toggle-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #4fc3f7;
+  cursor: pointer;
+}
+
 .settings-hint {
   font-size: 0.8rem;
   color: #666;

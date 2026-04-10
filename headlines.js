@@ -60,3 +60,22 @@ window.DEFAULT_HEADLINES = [
   { text: "ConocoPhillips in advanced merger talks with Marathon Oil", ticker: "COP", direction: null },
   { text: "Lockheed Martin wins $2B contract but faces supply chain delays", ticker: "LMT", direction: null },
 ];
+
+// Noise headlines — not actionable, correct response is to skip (Del)
+window.NOISE_HEADLINES = [
+  { text: "US consumer confidence index comes in at 104.2 for March", ticker: "", noise: true },
+  { text: "Fed officials reiterate data-dependent approach to rate decisions", ticker: "", noise: true },
+  { text: "Treasury yields hold steady ahead of Friday jobs report", ticker: "", noise: true },
+  { text: "Oil prices little changed as traders await OPEC meeting", ticker: "", noise: true },
+  { text: "European markets close mixed in quiet trading session", ticker: "", noise: true },
+  { text: "China manufacturing PMI ticks up to 50.3 in March", ticker: "", noise: true },
+  { text: "US housing starts rise 1.2% month-over-month in February", ticker: "", noise: true },
+  { text: "Dollar index flat as markets digest mixed economic signals", ticker: "", noise: true },
+  { text: "Weekly jobless claims come in at 215K matching expectations", ticker: "", noise: true },
+  { text: "IMF maintains global growth forecast at 3.1% for 2026", ticker: "", noise: true },
+  { text: "Gold prices consolidate near $2,400 amid low volatility", ticker: "", noise: true },
+  { text: "Bitcoin trades sideways around $95K over the weekend", ticker: "", noise: true },
+  { text: "Natural gas inventories draw 28 Bcf in line with estimates", ticker: "", noise: true },
+  { text: "Senate committee schedules hearing on AI regulation framework", ticker: "", noise: true },
+  { text: "US trade deficit widens slightly to $68.9B in January", ticker: "", noise: true },
+];

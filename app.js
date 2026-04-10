@@ -22,6 +22,8 @@
   const btnLoadDefault = document.getElementById('btn-load-default');
   const btnClearHistory = document.getElementById('btn-clear-history');
   const pastSessionsEl = document.getElementById('past-sessions');
+  const toggleDelay = document.getElementById('toggle-delay');
+  const toggleNoise = document.getElementById('toggle-noise');
 
   // --- Constants ---
   const SHORT_KEYS = new Set(['S', 'D', 'A', 'F', 'G']);
@@ -30,16 +32,39 @@
   const LS_SESSIONS = 'headline-trainer-sessions';
   const LS_CUSTOM = 'headline-trainer-custom-headlines';
   const LS_BEST = 'headline-trainer-best-all-time';
+  const LS_SETTINGS = 'headline-trainer-settings';
+  const DELAY_MIN_MS = 1000;
+  const DELAY_MAX_MS = 10000;
+
+  // --- Settings ---
+  const settings = loadSettings();
+
+  function loadSettings() {
+    try {
+      const s = JSON.parse(localStorage.getItem(LS_SETTINGS));
+      return {
+        randomDelay: s && typeof s.randomDelay === 'boolean' ? s.randomDelay : true,
+        noiseHeadlines: s && typeof s.noiseHeadlines === 'boolean' ? s.noiseHeadlines : true,
+      };
+    } catch (e) {
+      return { randomDelay: true, noiseHeadlines: true };
+    }
+  }
+
+  function saveSettings() {
+    localStorage.setItem(LS_SETTINGS, JSON.stringify(settings));
+  }
 
   // --- State ---
   const state = {
-    phase: 'idle', // 'idle' | 'active' | 'locked' | 'result'
+    phase: 'idle', // 'idle' | 'waiting' | 'active' | 'locked' | 'result'
     headlines: [],
     currentIndex: 0,
     currentHeadline: null,
     timerStart: null,
     timerRAF: null,
     resultTimeout: null,
+    waitingTimeout: null,
     session: {
       results: [],
       startedAt: null,
@@ -68,7 +93,10 @@
   }
 
   function initSession() {
-    const src = getHeadlines();
+    let src = getHeadlines();
+    if (settings.noiseHeadlines && window.NOISE_HEADLINES) {
+      src = src.concat(window.NOISE_HEADLINES);
+    }
     state.headlines = shuffleArray(src);
     state.currentIndex = 0;
     state.session = { results: [], startedAt: Date.now() };
@@ -105,6 +133,27 @@
       return;
     }
 
+    if (settings.randomDelay) {
+      // Enter waiting phase with random delay
+      state.phase = 'waiting';
+      headlineEl.textContent = '';
+      headlineEl.classList.add('idle');
+      resultEl.textContent = '';
+      resultEl.className = '';
+      timerEl.textContent = '';
+      tickerInput.disabled = true;
+      tickerInput.value = '';
+
+      const delay = DELAY_MIN_MS + Math.random() * (DELAY_MAX_MS - DELAY_MIN_MS);
+      state.waitingTimeout = setTimeout(function () {
+        revealHeadline();
+      }, delay);
+    } else {
+      revealHeadline();
+    }
+  }
+
+  function revealHeadline() {
     state.currentHeadline = state.headlines[state.currentIndex];
     state.currentIndex++;
     state.phase = 'active';
@@ -134,25 +183,35 @@
     tickerInput.disabled = true;
     tickerInput.classList.remove('locked');
 
-    const tickerCorrect = userTicker === expected.ticker.toUpperCase() ||
-      (expected.altTickers && expected.altTickers.map(t => t.toUpperCase()).includes(userTicker));
+    const isNoise = !!expected.noise;
 
-    let directionCorrect = null;
-    if (action !== 'skip' && expected.direction !== null && expected.direction !== undefined) {
-      directionCorrect = action === expected.direction;
+    let tickerCorrect, directionCorrect = null;
+
+    if (isNoise) {
+      // Noise headline: correct action is to skip
+      tickerCorrect = action === 'skip';
+      directionCorrect = null;
+    } else {
+      tickerCorrect = userTicker === expected.ticker.toUpperCase() ||
+        (expected.altTickers && expected.altTickers.map(t => t.toUpperCase()).includes(userTicker));
+
+      if (action !== 'skip' && expected.direction !== null && expected.direction !== undefined) {
+        directionCorrect = action === expected.direction;
+      }
     }
 
     const result = {
       round: state.session.results.length + 1,
       headline: expected.text,
-      expectedTicker: expected.ticker,
-      userTicker: userTicker || '(empty)',
-      expectedDirection: expected.direction,
+      expectedTicker: isNoise ? 'SKIP' : expected.ticker,
+      userTicker: action === 'skip' ? '(skip)' : (userTicker || '(empty)'),
+      expectedDirection: isNoise ? 'skip' : expected.direction,
       userDirection: action,
       tickerCorrect,
       directionCorrect,
       timeMs,
       skipped: action === 'skip',
+      noise: isNoise,
     };
 
     state.session.results.push(result);
@@ -169,6 +228,18 @@
 
   // --- Result Display ---
   function showResult(r) {
+    // Noise headline results
+    if (r.noise) {
+      if (r.skipped) {
+        resultEl.textContent = 'CORRECT SKIP — Not actionable | ' + r.timeMs + ' ms';
+        resultEl.className = 'correct';
+      } else {
+        resultEl.textContent = 'WRONG — Should have skipped (noise headline) | ' + r.timeMs + ' ms';
+        resultEl.className = 'incorrect';
+      }
+      return;
+    }
+
     if (r.skipped) {
       resultEl.textContent = 'SKIPPED — ' + r.expectedTicker;
       resultEl.className = 'skipped';
@@ -243,7 +314,8 @@
   // --- Stats ---
   function updateStats() {
     const results = state.session.results;
-    const scored = results.filter(r => !r.skipped);
+    // For stats, count all non-skip results PLUS noise headlines (where skip IS the scored action)
+    const scored = results.filter(r => !r.skipped || r.noise);
 
     if (scored.length === 0) {
       statAvg.textContent = '--';
@@ -255,7 +327,10 @@
     const times = scored.map(r => r.timeMs);
     const avg = Math.round(times.reduce((a, b) => a + b, 0) / times.length);
     const best = Math.min(...times);
-    const correct = scored.filter(r => r.tickerCorrect && (r.directionCorrect === null || r.directionCorrect)).length;
+    const correct = scored.filter(function (r) {
+      if (r.noise) return r.skipped; // noise: correct if skipped
+      return r.tickerCorrect && (r.directionCorrect === null || r.directionCorrect);
+    }).length;
     const accuracy = Math.round((correct / scored.length) * 100);
 
     statAvg.textContent = avg + ' ms';
@@ -277,6 +352,7 @@
   // --- Stop Session (user pressed Escape mid-session) ---
   function stopSession() {
     if (state.resultTimeout) clearTimeout(state.resultTimeout);
+    if (state.waitingTimeout) clearTimeout(state.waitingTimeout);
     stopTimer();
     state.phase = 'idle';
     tickerInput.disabled = true;
@@ -331,7 +407,7 @@
     if (e.key === 'Escape') {
       e.preventDefault();
       // If in an active session, stop it
-      if (state.phase === 'active' || state.phase === 'locked' || state.phase === 'result') {
+      if (state.phase === 'waiting' || state.phase === 'active' || state.phase === 'locked' || state.phase === 'result') {
         stopSession();
         return;
       }
@@ -422,6 +498,8 @@
     if (isHidden) {
       settingsPanel.classList.remove('hidden');
       settingsOverlay.classList.remove('hidden');
+      toggleDelay.checked = settings.randomDelay;
+      toggleNoise.checked = settings.noiseHeadlines;
       renderPastSessions();
     } else {
       settingsPanel.classList.add('hidden');
@@ -433,6 +511,17 @@
   settingsBtn.addEventListener('click', toggleSettings);
   settingsClose.addEventListener('click', toggleSettings);
   settingsOverlay.addEventListener('click', toggleSettings);
+
+  // Drill option toggles
+  toggleDelay.addEventListener('change', function () {
+    settings.randomDelay = toggleDelay.checked;
+    saveSettings();
+  });
+
+  toggleNoise.addEventListener('change', function () {
+    settings.noiseHeadlines = toggleNoise.checked;
+    saveSettings();
+  });
 
   // File import
   fileImport.addEventListener('change', function (e) {
